@@ -44,6 +44,7 @@ where
                 stdout,
             }) => {
                 writeln!(self.write, "## ❌ {}", name)?;
+                writeln!(self.write, "Duration: {:?}", exec_time)?;
                 if !stdout.is_empty() {
                     writeln!(self.write)?;
                     writeln!(self.write, "<details>")?;
@@ -62,10 +63,21 @@ where
                 }
             }
 
-            Record::Suite(suite::Event::Failed { passed, failed, .. }) => {
-                writeln!(self.write, "| Passed | Failed |")?;
-                writeln!(self.write, "| --- | --- |")?;
-                writeln!(self.write, "| {} | {} |", passed, failed)?;
+            Record::Suite(suite::Event::Failed {
+                passed,
+                failed,
+                ignored,
+                filtered_out,
+                ..
+            }) => {
+                writeln!(self.write, "# Summary")?;
+                writeln!(self.write, "| Passed | Failed | Ignored | Filtered |")?;
+                writeln!(self.write, "| --- | --- | --- | --- |")?;
+                writeln!(
+                    self.write,
+                    "| {} | {} | {} | {} |",
+                    passed, failed, ignored, filtered_out
+                )?;
             }
             _ => {}
         }
@@ -91,7 +103,7 @@ fn main() -> anyhow::Result<()> {
     let mut processor = Processor::new(writer);
 
     for line in reader.lines() {
-        processor.line(&line?);
+        processor.line(&line?)?;
     }
 
     Ok(())

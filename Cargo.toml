@@ -1,7 +1,8 @@
 [package]
-name = "test-logs"
+name = "rust-tests-report"
 version = "0.1.0"
 edition = "2018"
+license = "Apache-2"
 
 [dependencies]
 anyhow = "1"
