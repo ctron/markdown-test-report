@@ -96,6 +96,7 @@ where
     }
 
     fn render_index(&mut self) -> anyhow::Result<()> {
+        writeln!(self.write)?;
         writeln!(self.write, "# Index")?;
         writeln!(self.write)?;
         writeln!(self.write, "| Name | Result | Duration |")?;
@@ -126,20 +127,21 @@ where
             }
         }
 
-        writeln!(self.write)?;
-
         Ok(())
     }
 
     fn render_details(&mut self) -> anyhow::Result<()> {
-        writeln!(self.write, "# Details")?;
         writeln!(self.write)?;
+        writeln!(self.write)?;
+        writeln!(self.write, "# Details")?;
 
         for test in &self.tests {
             match test {
                 test::Event::Started { .. } => {}
                 test::Event::Ok { name, exec_time } => {
+                    writeln!(self.write)?;
                     writeln!(self.write, "## {}", self.make_heading(name, "✅"))?;
+                    writeln!(self.write)?;
                     writeln!(self.write, "**Duration**: {:?}", exec_time)?;
                 }
 
@@ -148,7 +150,9 @@ where
                     exec_time,
                     stdout,
                 } => {
+                    writeln!(self.write)?;
                     writeln!(self.write, "## {}", self.make_heading(name, "❌"))?;
+                    writeln!(self.write)?;
                     writeln!(self.write, "**Duration**: {:?}", exec_time)?;
                     if !stdout.is_empty() {
                         writeln!(self.write)?;
@@ -164,7 +168,6 @@ where
 
                         writeln!(self.write)?;
                         writeln!(self.write, "</details>")?;
-                        writeln!(self.write)?;
                     }
                 }
             }
