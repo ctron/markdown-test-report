@@ -1,6 +1,6 @@
 use serde::de::Error;
+use serde::Deserialize;
 use serde::{de, Deserializer};
-use serde::{Deserialize, Serialize};
 use std::{fmt, time::Duration};
 
 #[derive(Clone, Debug, Deserialize)]
