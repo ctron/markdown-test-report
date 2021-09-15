@@ -75,7 +75,7 @@ where
     }
 
     fn make_heading(&self, name: &str, outcome: &str) -> String {
-        format!("{} {}", outcome, name)
+        format!("{} {}", outcome, name)
     }
 
     fn render_index(&mut self) -> anyhow::Result<()> {
