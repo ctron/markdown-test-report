@@ -1,6 +1,7 @@
 mod event;
 
 use crate::event::{suite, test, Record};
+use chrono::Utc;
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::fs::File;
@@ -18,11 +19,28 @@ impl<W> Processor<W>
 where
     W: Write,
 {
-    pub fn new(write: W) -> Self {
+    pub fn new(write: W) -> anyhow::Result<Self> {
         Self {
             write,
             tests: Vec::new(),
         }
+        .begin()
+    }
+
+    fn begin(mut self) -> anyhow::Result<Self> {
+        let run_id = std::env::var("GITHUB_RUN_ID").ok();
+
+        writeln!(self.write, "---")?;
+        writeln!(
+            self.write,
+            "title: \"Test Result {}\"",
+            run_id.unwrap_or_else(|| "????".to_string())
+        )?;
+        writeln!(self.write, "date: {}", Utc::now().to_rfc3339())?;
+        writeln!(self.write, "categories: test-report")?;
+        writeln!(self.write, "---")?;
+        writeln!(self.write)?;
+        Ok(self)
     }
 
     pub fn line(&mut self, line: &str) -> anyhow::Result<()> {
@@ -49,7 +67,6 @@ where
                 filtered_out,
                 ..
             }) => {
-                writeln!(self.write, "# Summary")?;
                 writeln!(self.write)?;
                 writeln!(self.write, "| Passed | Failed | Ignored | Filtered |")?;
                 writeln!(self.write, "| ------ | ------ | ------- | -------- |")?;
@@ -174,7 +191,9 @@ fn make_anchor(link: &str) -> String {
         if c == '_' {
             s.push(c);
             was_dash = false;
-        } else if c.is_whitespace() || c == '-' {
+        } else if c == ' ' || c == '-' {
+            // using c.is_whitespace() doesn't work, as markdown parsers
+            // then to check for "space" and not for "is it a whitespace like character"
             if !was_dash {
                 was_dash = true;
                 s.push('-');
@@ -201,7 +220,7 @@ fn main() -> anyhow::Result<()> {
     let output = File::create("test-output.md")?;
     let writer = BufWriter::new(output);
 
-    let mut processor = Processor::new(writer);
+    let mut processor = Processor::new(writer)?;
 
     for line in reader.lines() {
         processor.line(&line?)?;
