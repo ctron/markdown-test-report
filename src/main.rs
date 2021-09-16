@@ -71,15 +71,17 @@ where
             _ => None,
         };
 
+        let date = Utc::now();
+
         let title = format!(
             "{} Test Result {}",
             summary.outcome,
-            run_id.unwrap_or_else(|| "????".to_string())
+            date.format("%Y-%m-%d %H:%M UTC")
         );
 
         writeln!(self.write, "---")?;
         writeln!(self.write, "title: \"{}\"", title)?;
-        writeln!(self.write, "date: {}", Utc::now().to_rfc3339())?;
+        writeln!(self.write, "date: {}", date.to_rfc3339())?;
         writeln!(self.write, "categories: test-report")?;
         writeln!(self.write, "---")?;
         writeln!(self.write)?;
