@@ -43,6 +43,16 @@ pub mod suite {
         Started {
             test_count: u64,
         },
+        Ok {
+            passed: u64,
+            failed: u64,
+            allowed_fail: u64,
+            ignored: u64,
+            measured: u64,
+            filtered_out: u64,
+            #[serde(deserialize_with = "from_duration")]
+            exec_time: Duration,
+        },
         Failed {
             passed: u64,
             failed: u64,
