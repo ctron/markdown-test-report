@@ -10,11 +10,17 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::time::Duration;
 
+#[derive(Clone, Debug)]
+pub struct ProcessOptions {
+    pub disable_front_matter: bool,
+}
+
 struct Processor<W>
 where
     W: Write,
 {
     write: W,
+    options: ProcessOptions,
     tests: Vec<test::Event>,
     test_count: Option<u64>,
     summary: Option<Summary>,
@@ -49,9 +55,10 @@ impl<W> Processor<W>
 where
     W: Write,
 {
-    pub fn new(write: W) -> Self {
+    pub fn new(write: W, options: ProcessOptions) -> Self {
         Self {
             write,
+            options,
             tests: Vec::new(),
             test_count: None,
             summary: None,
@@ -73,18 +80,20 @@ where
 
         let date = Utc::now();
 
-        let title = format!(
-            "{} Test Result {}",
-            summary.outcome,
-            date.format("%Y-%m-%d %H:%M UTC")
-        );
+        if !self.options.disable_front_matter {
+            let title = format!(
+                "{} Test Result {}",
+                summary.outcome,
+                date.format("%Y-%m-%d %H:%M UTC")
+            );
 
-        writeln!(self.write, "---")?;
-        writeln!(self.write, "title: \"{}\"", title)?;
-        writeln!(self.write, "date: {}", date.to_rfc3339())?;
-        writeln!(self.write, "categories: test-report")?;
-        writeln!(self.write, "---")?;
-        writeln!(self.write)?;
+            writeln!(self.write, "---")?;
+            writeln!(self.write, "title: \"{}\"", title)?;
+            writeln!(self.write, "date: {}", date.to_rfc3339())?;
+            writeln!(self.write, "categories: test-report")?;
+            writeln!(self.write, "---")?;
+            writeln!(self.write)?;
+        }
 
         let total = self
             .test_count
@@ -318,8 +327,12 @@ fn main() -> anyhow::Result<()> {
             .help("The name of the output file.")
             .short("o")
         )
+        .arg(Arg::with_name("no-front-matter")
+            .help("Disable front matter generation.")
+        )
         .get_matches();
 
+    let disable_front_matter = matches.is_present("no-front-matter");
     let input = matches.value_of("INPUT").unwrap_or("test-output.json");
     let output = matches
         .value_of("output")
@@ -348,7 +361,12 @@ fn main() -> anyhow::Result<()> {
     let output = File::create(output)?;
     let writer = BufWriter::new(output);
 
-    let mut processor = Processor::new(writer);
+    let mut processor = Processor::new(
+        writer,
+        ProcessOptions {
+            disable_front_matter,
+        },
+    );
 
     for line in reader.lines() {
         processor.line(&line?)?;
