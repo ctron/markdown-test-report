@@ -2,6 +2,7 @@ mod event;
 mod git;
 mod processor;
 
+use crate::processor::{ProcessOptions, Processor};
 use crate::{git::GitInfo, processor::Addon};
 use clap::{App, Arg};
 use log::LevelFilter;

@@ -19,7 +19,7 @@ pub struct ProcessOptions<W> {
     pub addons: Vec<Box<dyn Addon<W>>>,
 }
 
-struct Processor<W>
+pub struct Processor<W>
 where
     W: Write,
 {
