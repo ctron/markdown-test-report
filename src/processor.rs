@@ -132,7 +132,7 @@ where
             writeln!(self.write)?;
         }
 
-        writeln!(self.write, "<!-- more -->")?;
+        writeln!(self.write, "<!--more-->")?;
 
         Ok(())
     }
