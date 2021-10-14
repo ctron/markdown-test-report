@@ -4,6 +4,12 @@ version = "0.2.0"
 edition = "2018"
 license = "Apache-2"
 
+authors = ["Jens Reimann <jreimann@redhat.com>"]
+description = "API mappings for the 'The Things Network'"
+repository = "https://github.com/ctron/markdown-test-report"
+categories = ["command-line-utilities", "development-tools"]
+keywords = ["markdown", "testing"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1"
