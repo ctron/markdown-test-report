@@ -11,3 +11,5 @@ Converts `cargo test` results from JSON to Markdown.
 Used by:
 
   * https://drogue-iot.github.io/drogue-cloud-testing/
+
+![Example Screenshot](docs/example1.png)
