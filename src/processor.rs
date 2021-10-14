@@ -325,3 +325,18 @@ fn make_anchor(link: &str) -> String {
     }
     s
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_anchors() {
+        assert_eq!(make_anchor(""), "");
+        assert_eq!(
+            make_anchor("✅ tests::registry::test_registry_create_and_delete"),
+            "-testsregistrytest_registry_create_and_delete"
+        );
+        assert_eq!(make_anchor("foo  bar"), "foo-bar");
+    }
+}

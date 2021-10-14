@@ -8,12 +8,18 @@ use std::{
 
 #[derive(Debug)]
 pub struct GitInfo {
+    /// Path to the repository.
     path: PathBuf,
+    /// If the operation is required. If not, it will fail silently.
+    required: bool,
 }
 
 impl GitInfo {
-    pub fn new(path: &Path) -> Self {
-        Self { path: path.into() }
+    pub fn new(path: &Path, required: bool) -> Self {
+        Self {
+            path: path.into(),
+            required,
+        }
     }
 
     fn render_commit<W>(&self, write: &mut W, commit: &Commit) -> anyhow::Result<()>
@@ -37,14 +43,21 @@ impl GitInfo {
 
         Ok(())
     }
-}
 
-impl<W> super::Addon<W> for GitInfo
-where
-    W: Write,
-{
-    fn render(&self, write: &mut W) -> anyhow::Result<()> {
+    fn render_git<W>(&self, write: &mut W) -> anyhow::Result<()>
+    where
+        W: Write,
+    {
         let repo = Repository::open(&self.path)?;
+
+        let remote = repo.find_remote("origin")?;
+        writeln!(
+            write,
+            "**Git:** `{repo}` @ `{ref}`",
+            repo = remote.url().unwrap_or("<unknown>"),
+            ref = repo.head()?.name().unwrap_or("<unknown>")
+        )?;
+        writeln!(write)?;
 
         let commit = repo
             .head()?
@@ -57,5 +70,17 @@ where
         }
 
         Ok(())
+    }
+}
+
+impl<W> super::Addon<W> for GitInfo
+where
+    W: Write,
+{
+    fn render(&self, write: &mut W) -> anyhow::Result<()> {
+        match self.render_git(write) {
+            Err(err) if self.required => Err(err),
+            _ => Ok(()),
+        }
     }
 }

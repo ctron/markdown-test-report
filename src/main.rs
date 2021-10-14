@@ -18,25 +18,30 @@ fn main() -> anyhow::Result<()> {
         .author("Jens Reimann <ctron@dentrassi.de>")
         .arg(
             Arg::with_name("INPUT")
-                .help("The filename of the JSON data. This file must may contain additional (non-JSON) lines, which will be ignored during processing.")
+                .help("The filename of the JSON data. This file must may contain additional (non-JSON) lines, which will be ignored during processing")
                 .index(1)
                 .default_value("test-output.json"),
         )
         .arg(Arg::with_name("output")
-            .help("The name of the output file.")
+            .help("The name of the output file")
             .short("o")
             .long("output")
             .takes_value(true)
         )
         .arg(Arg::with_name("no-front-matter")
             .long("no-front-matter")
-            .help("Disable front matter generation.")
+            .help("Disable front matter generation")
         )
         .arg(Arg::with_name("git")
             .long("git")
-            .help("Add information from Git")
+            .help("Add information from the Git repository in the provided location")
+            .default_value(".")
             .takes_value(true)
         )
+        .arg(Arg::with_name("no-git")
+            .long("no-git")
+            .help("Disable Git information extraction")
+            .conflicts_with("git"))
         .get_matches();
 
     let disable_front_matter = matches.is_present("no-front-matter");
@@ -54,8 +59,11 @@ fn main() -> anyhow::Result<()> {
 
     let mut addons = Vec::<Box<dyn Addon<BufWriter<File>>>>::new();
 
-    if let Some(git_path) = matches.value_of("git") {
-        addons.push(Box::new(GitInfo::new(Path::new(&git_path))))
+    if !matches.is_present("no-git") {
+        if let Some(git_path) = matches.value_of("git") {
+            let required = matches.is_present("git");
+            addons.push(Box::new(GitInfo::new(Path::new(&git_path), required)))
+        }
     }
 
     TermLogger::init(
@@ -87,19 +95,4 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_anchors() {
-        assert_eq!(make_anchor(""), "");
-        assert_eq!(
-            make_anchor("✅ tests::registry::test_registry_create_and_delete"),
-            "-testsregistrytest_registry_create_and_delete"
-        );
-        assert_eq!(make_anchor("foo  bar"), "foo-bar");
-    }
 }
