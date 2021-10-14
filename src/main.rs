@@ -1,18 +1,29 @@
 mod event;
+mod git;
 
 use crate::event::{suite, test, Record};
+use crate::git::GitInfo;
 use chrono::Utc;
 use clap::{App, Arg};
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::path::Path;
 use std::time::Duration;
 
-#[derive(Clone, Debug)]
-pub struct ProcessOptions {
+pub trait Addon<W>: Debug
+where
+    W: Write,
+{
+    fn render(&self, write: &mut W) -> anyhow::Result<()>;
+}
+
+#[derive(Debug)]
+pub struct ProcessOptions<W> {
     pub disable_front_matter: bool,
+    pub addons: Vec<Box<dyn Addon<W>>>,
 }
 
 struct Processor<W>
@@ -20,7 +31,7 @@ where
     W: Write,
 {
     write: W,
-    options: ProcessOptions,
+    options: ProcessOptions<W>,
     tests: Vec<test::Event>,
     test_count: Option<u64>,
     summary: Option<Summary>,
@@ -55,7 +66,7 @@ impl<W> Processor<W>
 where
     W: Write,
 {
-    pub fn new(write: W, options: ProcessOptions) -> Self {
+    pub fn new(write: W, options: ProcessOptions<W>) -> Self {
         Self {
             write,
             options,
@@ -91,6 +102,7 @@ where
             writeln!(self.write, "title: \"{}\"", title)?;
             writeln!(self.write, "date: {}", date.to_rfc3339())?;
             writeln!(self.write, "categories: test-report")?;
+            writeln!(self.write, "excerpt_separator: <!--more-->")?;
             writeln!(self.write, "---")?;
             writeln!(self.write)?;
         }
@@ -117,10 +129,17 @@ where
         )?;
         writeln!(self.write)?;
 
-        if let Some(link) = link {
-            writeln!(self.write, "**Job:** {}", link)?;
+        for addon in &self.options.addons {
+            addon.render(&mut self.write)?;
             writeln!(self.write)?;
         }
+
+        if let Some(link) = link {
+            writeln!(self.write, "**Job:** [{link}]({link})", link = link)?;
+            writeln!(self.write)?;
+        }
+
+        writeln!(self.write, "<!-- more -->")?;
 
         Ok(())
     }
@@ -326,9 +345,17 @@ fn main() -> anyhow::Result<()> {
         .arg(Arg::with_name("output")
             .help("The name of the output file.")
             .short("o")
+            .long("output")
+            .takes_value(true)
         )
         .arg(Arg::with_name("no-front-matter")
+            .long("no-front-matter")
             .help("Disable front matter generation.")
+        )
+        .arg(Arg::with_name("git")
+            .long("git")
+            .help("Add information from Git")
+            .takes_value(true)
         )
         .get_matches();
 
@@ -344,6 +371,12 @@ fn main() -> anyhow::Result<()> {
                 input.to_string() + ".md"
             }
         });
+
+    let mut addons = Vec::<Box<dyn Addon<BufWriter<File>>>>::new();
+
+    if let Some(git_path) = matches.value_of("git") {
+        addons.push(Box::new(GitInfo::new(Path::new(&git_path))))
+    }
 
     TermLogger::init(
         LevelFilter::Debug,
@@ -365,6 +398,7 @@ fn main() -> anyhow::Result<()> {
         writer,
         ProcessOptions {
             disable_front_matter,
+            addons,
         },
     );
 
