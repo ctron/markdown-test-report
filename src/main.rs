@@ -7,6 +7,8 @@ use crate::{git::GitInfo, processor::Addon};
 use clap::{App, Arg};
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
+use std::io::Write;
+use std::ops::Deref;
 use std::{
     fs::File,
     io::{BufRead, BufReader, BufWriter},
@@ -38,6 +40,10 @@ fn main() -> anyhow::Result<()> {
             .default_value(".")
             .takes_value(true)
         )
+        .arg (Arg::with_name("summary")
+            .long("summary")
+            .help ("Show only the summary section")
+        )
         .arg(Arg::with_name("no-git")
             .long("no-git")
             .help("Disable Git information extraction")
@@ -57,7 +63,7 @@ fn main() -> anyhow::Result<()> {
             }
         });
 
-    let mut addons = Vec::<Box<dyn Addon<BufWriter<File>>>>::new();
+    let mut addons = Vec::<Box<dyn Addon>>::new();
 
     if !matches.is_present("no-git") {
         if let Some(git_path) = matches.value_of("git") {
@@ -69,7 +75,7 @@ fn main() -> anyhow::Result<()> {
     TermLogger::init(
         LevelFilter::Debug,
         Config::default(),
-        TerminalMode::Mixed,
+        TerminalMode::Stderr,
         ColorChoice::Auto,
     )?;
 
@@ -79,7 +85,10 @@ fn main() -> anyhow::Result<()> {
     let input = File::open(input)?;
     let reader = BufReader::new(input);
 
-    let output = File::create(output)?;
+    let output: Box<dyn Write> = match output.deref() {
+        "-" => Box::new(std::io::stdout()),
+        output => Box::new(File::create(output)?),
+    };
     let writer = BufWriter::new(output);
 
     let mut processor = Processor::new(
@@ -87,6 +96,7 @@ fn main() -> anyhow::Result<()> {
         ProcessOptions {
             disable_front_matter,
             addons,
+            summary: matches.is_present("summary"),
         },
     );
 

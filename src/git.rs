@@ -22,10 +22,7 @@ impl GitInfo {
         }
     }
 
-    fn render_commit<W>(&self, write: &mut W, commit: &Commit) -> anyhow::Result<()>
-    where
-        W: Write,
-    {
+    fn render_commit(&self, write: &mut dyn Write, commit: &Commit) -> anyhow::Result<()> {
         let tz = FixedOffset::west(commit.time().offset_minutes() * 60);
         let time =
             DateTime::<Utc>::from(UNIX_EPOCH + Duration::from_secs(commit.time().seconds() as u64))
@@ -44,10 +41,7 @@ impl GitInfo {
         Ok(())
     }
 
-    fn render_git<W>(&self, write: &mut W) -> anyhow::Result<()>
-    where
-        W: Write,
-    {
+    fn render_git(&self, write: &mut dyn Write) -> anyhow::Result<()> {
         let repo = Repository::open(&self.path)?;
 
         let remote = repo.find_remote("origin")?;
@@ -73,11 +67,8 @@ impl GitInfo {
     }
 }
 
-impl<W> super::Addon<W> for GitInfo
-where
-    W: Write,
-{
-    fn render(&self, write: &mut W) -> anyhow::Result<()> {
+impl super::Addon for GitInfo {
+    fn render(&self, write: &mut dyn Write) -> anyhow::Result<()> {
         match self.render_git(write) {
             Err(err) if self.required => Err(err),
             _ => Ok(()),

@@ -6,17 +6,15 @@ use std::{
     time::Duration,
 };
 
-pub trait Addon<W>: Debug
-where
-    W: Write,
-{
-    fn render(&self, write: &mut W) -> anyhow::Result<()>;
+pub trait Addon: Debug {
+    fn render(&self, write: &mut dyn Write) -> anyhow::Result<()>;
 }
 
 #[derive(Debug)]
-pub struct ProcessOptions<W> {
+pub struct ProcessOptions {
     pub disable_front_matter: bool,
-    pub addons: Vec<Box<dyn Addon<W>>>,
+    pub addons: Vec<Box<dyn Addon>>,
+    pub summary: bool,
 }
 
 pub struct Processor<W>
@@ -24,7 +22,7 @@ where
     W: Write,
 {
     write: W,
-    options: ProcessOptions<W>,
+    options: ProcessOptions,
     tests: Vec<test::Event>,
     test_count: Option<u64>,
     summary: Option<Summary>,
@@ -59,7 +57,7 @@ impl<W> Processor<W>
 where
     W: Write,
 {
-    pub fn new(write: W, options: ProcessOptions<W>) -> Self {
+    pub fn new(write: W, options: ProcessOptions) -> Self {
         Self {
             write,
             options,
@@ -131,8 +129,6 @@ where
             writeln!(self.write, "**Job:** [{link}]({link})", link = link)?;
             writeln!(self.write)?;
         }
-
-        writeln!(self.write, "<!--more-->")?;
 
         Ok(())
     }
@@ -210,6 +206,8 @@ where
     }
 
     fn render_index(&mut self) -> anyhow::Result<()> {
+        writeln!(self.write, "<!--more-->")?;
+
         writeln!(self.write)?;
         writeln!(self.write, "# Index")?;
         writeln!(self.write)?;
@@ -299,8 +297,10 @@ where
         if let Some(summary) = self.summary.clone() {
             self.write_header(&summary).expect("Render header");
         }
-        self.render_index().expect("Render index");
-        self.render_details().expect("Render details");
+        if !self.options.summary {
+            self.render_index().expect("Render index");
+            self.render_details().expect("Render details");
+        }
     }
 }
 
