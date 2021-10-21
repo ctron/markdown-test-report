@@ -44,6 +44,18 @@ fn main() -> anyhow::Result<()> {
             .long("summary")
             .help ("Show only the summary section")
         )
+        .arg(Arg::with_name("quiet")
+            .long("quiet")
+            .short("q")
+            .help("Be quiet")
+        )
+        .arg(Arg::with_name("verbose")
+            .long("verbose")
+            .short("v")
+            .help("Be more verbose. May be repeated multiple times.")
+            .multiple(true)
+            .conflicts_with("quiet")
+        )
         .arg(Arg::with_name("no-git")
             .long("no-git")
             .help("Disable Git information extraction")
@@ -72,8 +84,19 @@ fn main() -> anyhow::Result<()> {
         }
     }
 
+    let log_level = match (
+        matches.is_present("quiet"),
+        matches.occurrences_of("verbose"),
+    ) {
+        (true, _) => LevelFilter::Off,
+        (_, 0) => LevelFilter::Warn,
+        (_, 1) => LevelFilter::Info,
+        (_, 2) => LevelFilter::Debug,
+        (_, _) => LevelFilter::Trace,
+    };
+
     TermLogger::init(
-        LevelFilter::Debug,
+        log_level,
         Config::default(),
         TerminalMode::Stderr,
         ColorChoice::Auto,
