@@ -1,5 +1,6 @@
 use crate::event::{suite, test, Record};
 use chrono::Utc;
+use humantime::FormattedDuration;
 use std::{
     fmt::{Debug, Display, Formatter},
     io::Write,
@@ -108,7 +109,7 @@ where
             r#"
 | | Total | Passed | Failed | Ignored | Filtered | Duration |
 | --- | ----- | -------| ------ | ------- | -------- | -------- |
-| {} | {} | {} | {} | {} | {} | {:?} |
+| {} | {} | {} | {} | {} | {} | {} |
 "#,
             summary.outcome,
             total,
@@ -116,7 +117,7 @@ where
             summary.failed,
             summary.ignored,
             summary.filtered_out,
-            summary.exec_time
+            readable(&summary.exec_time)
         )?;
         writeln!(self.write)?;
 
@@ -220,9 +221,9 @@ where
                 test::Event::Ok { name, exec_time } => {
                     writeln!(
                         self.write,
-                        "| {} | ✅ | {:?} | ",
+                        "| {} | ✅ | {} | ",
                         self.make_name(&name, "✅"),
-                        exec_time
+                        readable(exec_time)
                     )?;
                 }
 
@@ -231,9 +232,9 @@ where
                 } => {
                     writeln!(
                         self.write,
-                        "| {} | ❌ | {:?} | ",
+                        "| {} | ❌ | {} | ",
                         self.make_name(&name, "❌"),
-                        exec_time
+                        readable(exec_time)
                     )?;
                 }
             }
@@ -254,7 +255,7 @@ where
                     writeln!(self.write)?;
                     writeln!(self.write, "## {}", self.make_heading(name, "✅"))?;
                     writeln!(self.write)?;
-                    writeln!(self.write, "**Duration**: {:?}", exec_time)?;
+                    writeln!(self.write, "**Duration**: {}", readable(exec_time))?;
                 }
 
                 test::Event::Failed {
@@ -265,7 +266,7 @@ where
                     writeln!(self.write)?;
                     writeln!(self.write, "## {}", self.make_heading(name, "❌"))?;
                     writeln!(self.write)?;
-                    writeln!(self.write, "**Duration**: {:?}", exec_time)?;
+                    writeln!(self.write, "**Duration**: {}", readable(exec_time))?;
                     if !stdout.is_empty() {
                         writeln!(self.write)?;
                         writeln!(self.write, "<details>")?;
@@ -324,6 +325,12 @@ fn make_anchor(link: &str) -> String {
         }
     }
     s
+}
+
+/// Make a readable duration from the provided one
+fn readable(duration: &Duration) -> FormattedDuration {
+    let duration = duration.as_secs();
+    humantime::format_duration(Duration::from_secs(duration))
 }
 
 #[cfg(test)]
