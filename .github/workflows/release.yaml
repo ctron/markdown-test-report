@@ -14,5 +14,11 @@ jobs:
     needs: [ ci ]
     runs-on: ubuntu-20.04
     steps:
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary
+      - name: Display downloaded content
+        run: ls -R
       - run: |
           Move on

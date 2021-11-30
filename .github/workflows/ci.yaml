@@ -33,3 +33,9 @@ jobs:
         with:
           command: build
           args: --release
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: binary
+          path: target/release/markdown-test-report
+          if-no-files-found: error
