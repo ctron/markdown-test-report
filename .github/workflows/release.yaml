@@ -8,9 +8,7 @@ on:
 jobs:
 
   ci:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: ./.github/workflows/ci.yaml
+    uses: ctron/markdown-test-report/.github/workflows/ci.yaml@main
 
   release:
     needs: [ ci ]
