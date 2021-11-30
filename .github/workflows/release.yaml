@@ -60,7 +60,6 @@ jobs:
           prerelease: ${{ needs.init.outputs.prerelease }}
 
       - name: Upload Release Assets
-        if: ${{ needs.init.outputs.release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: v${{ needs.init.outputs.version }}
@@ -68,7 +67,6 @@ jobs:
           hub release edit -m "" -a markdown-test-report#markdown-test-report-linux-amd64 $TAG
 
       - name: Remove draft status
-        if: ${{ needs.init.outputs.release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: v${{ needs.init.outputs.version }}
