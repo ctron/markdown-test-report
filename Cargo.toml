@@ -1,6 +1,6 @@
 [package]
 name = "markdown-test-report"
-version = "0.2.9"
+version = "0.2.8"
 edition = "2018"
 license = "Apache-2.0"
 
