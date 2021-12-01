@@ -62,6 +62,15 @@ jobs:
           draft: true
           prerelease: ${{ needs.init.outputs.prerelease }}
 
+      - name: Set changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ needs.init.outputs.version }}
+        run: |
+          echo "${{ needs.init.outputs.version }}" > CHANGELOG.md
+          convco changelog $(git tag --sort v:refname -l 'v*' | tail -n2 | head -n1)..$TAG >> CHANGELOG.md
+          hub release edit -F CHANGELOG.md
+
       - name: Upload Release Assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
