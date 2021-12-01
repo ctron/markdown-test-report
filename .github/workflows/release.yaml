@@ -58,6 +58,13 @@ jobs:
       - name: Display downloaded content
         run: ls -R
 
+      - name: Create changelog
+        run: |
+          echo "${{ needs.init.outputs.version }}" > CHANGELOG.md
+          echo >> CHANGELOG.md
+          echo >> CHANGELOG.md
+          convco changelog $(git tag --sort v:refname -l 'v*' | tail -n2 | head -n1)..$TAG >> CHANGELOG.md
+
       - name: Create Release
         id: create-release
         uses: actions/create-release@v1
@@ -68,17 +75,7 @@ jobs:
           release_name: ${{ needs.init.outputs.version }}
           draft: true
           prerelease: ${{ needs.init.outputs.prerelease }}
-
-      - name: Set changelog
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: v${{ needs.init.outputs.version }}
-        run: |
-          echo "${{ needs.init.outputs.version }}" > CHANGELOG.md
-          echo >> CHANGELOG.md
-          echo >> CHANGELOG.md
-          convco changelog $(git tag --sort v:refname -l 'v*' | tail -n2 | head -n1)..$TAG >> CHANGELOG.md
-          hub release edit -F CHANGELOG.md $TAG
+          body_path: CHANGELOG.md
 
       - name: Upload Release Assets
         env:
