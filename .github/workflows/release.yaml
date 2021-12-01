@@ -59,6 +59,8 @@ jobs:
         run: ls -R
 
       - name: Create changelog
+        env:
+          TAG: v${{ needs.init.outputs.version }}
         run: |
           echo "${{ needs.init.outputs.version }}" > CHANGELOG.md
           echo >> CHANGELOG.md
