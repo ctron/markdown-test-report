@@ -76,7 +76,7 @@ jobs:
         run: |
           echo "${{ needs.init.outputs.version }}" > CHANGELOG.md
           convco changelog $(git tag --sort v:refname -l 'v*' | tail -n2 | head -n1)..$TAG >> CHANGELOG.md
-          hub release edit -F CHANGELOG.md
+          hub release edit -F CHANGELOG.md $TAG
 
       - name: Upload Release Assets
         env:
