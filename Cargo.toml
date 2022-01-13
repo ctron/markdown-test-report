@@ -1,6 +1,6 @@
 [package]
 name = "markdown-test-report"
-version = "0.2.8"
+version = "0.2.9"
 edition = "2018"
 license = "Apache-2.0"
 
@@ -12,6 +12,7 @@ keywords = ["markdown", "testing"]
 readme = "README.md"
 
 [dependencies]
+askama_escape = "0.10"
 anyhow = "1"
 chrono = "0.4"
 clap = "2"

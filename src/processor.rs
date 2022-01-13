@@ -1,4 +1,5 @@
 use crate::event::{suite, test, Record};
+use askama_escape::{escape, Html};
 use chrono::Utc;
 use humantime::FormattedDuration;
 use std::{
@@ -276,7 +277,7 @@ where
                         writeln!(self.write)?;
 
                         writeln!(self.write, "<pre>")?;
-                        writeln!(self.write, "{}", stdout)?;
+                        writeln!(self.write, "{}", escape(stdout, Html))?;
                         writeln!(self.write, "</pre>")?;
 
                         writeln!(self.write)?;
