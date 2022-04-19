@@ -114,17 +114,19 @@ fn main() -> anyhow::Result<()> {
     };
     let writer = BufWriter::new(output);
 
-    let mut processor = Processor::new(
-        writer,
-        ProcessOptions {
-            disable_front_matter,
-            addons,
-            summary: matches.is_present("summary"),
-        },
-    );
+    {
+        let mut processor = Processor::new(
+            writer,
+            ProcessOptions {
+                disable_front_matter,
+                addons,
+                summary: matches.is_present("summary"),
+            },
+        );
 
-    for line in reader.lines() {
-        processor.line(&line?)?;
+        for line in reader.lines() {
+            processor.line(&line?)?;
+        }
     }
 
     Ok(())

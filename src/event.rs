@@ -57,6 +57,7 @@ pub mod suite {
         Failed {
             passed: u64,
             failed: u64,
+            #[serde(default)]
             allowed_fail: u64,
             ignored: u64,
             filtered_out: u64,
