@@ -47,6 +47,7 @@ pub mod suite {
         Ok {
             passed: u64,
             failed: u64,
+            #[serde(default)]
             allowed_fail: u64,
             ignored: u64,
             measured: u64,
