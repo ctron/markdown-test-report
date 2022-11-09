@@ -61,7 +61,6 @@ jobs:
         run: ls -R
 
       - name: Generate changelog
-        if: needs.prepare.outputs.release
         run: |
           convco changelog --max-minor=1 > /tmp/changelog.md
 
