@@ -26,8 +26,8 @@ struct Cli {
     #[clap(short, long, value_parser)]
     output: Option<String>,
     /// Disable report metadata
-    #[clap(short, long, action = clap::ArgAction::SetTrue)]
-    disable_front_matter: bool,
+    #[clap(short='d', long, action = clap::ArgAction::SetTrue)]
+    no_front_matter: bool,
     /// git top-level location
     #[clap(short, long, value_parser, default_value_t = String::from("."))]
     git: String,
@@ -106,7 +106,7 @@ fn main() -> anyhow::Result<()> {
         let mut processor = Processor::new(
             writer,
             ProcessOptions {
-                disable_front_matter: cli.disable_front_matter,
+                disable_front_matter: cli.no_front_matter,
                 addons,
                 summary: cli.summary,
             },
