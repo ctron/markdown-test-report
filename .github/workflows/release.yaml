@@ -62,7 +62,7 @@ jobs:
 
       - name: Generate changelog
         run: |
-          convco changelog --max-minor=1 > /tmp/changelog.md
+          convco changelog --max-minors=1 > /tmp/changelog.md
 
       - name: Stage release
         run: |
