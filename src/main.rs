@@ -47,31 +47,29 @@ struct Cli {
 
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
-    // let cmd = Cli::command();
-    // let args = cmd.get_matches();
-    // let cli:Cli = args.into();
-    // let args = cmd.get_matches_from()
-    // let a:ArgMatches = cli.into();
-    // let b: ArgMatches = ArgMatches::from(cli);
-    // let mut args = cmd.get_matches_from(cmd);
 
     // Parse filepaths
-    let input_path= Path::new(&cli.input);
-    log::debug!("input_path: {}", input_path.display());
+    let input_path = Path::new(&cli.input);
 
-    let file_stem = input_path.file_stem().ok_or_else(|| anyhow::anyhow!("unable to parse input filename")).unwrap().to_str().unwrap();
-    log::debug!("file_stem: {}", file_stem);
+    let file_stem = input_path
+        .file_stem()
+        .ok_or_else(|| anyhow::anyhow!("unable to parse input filename"))
+        .unwrap()
+        .to_str()
+        .unwrap();
 
-    let output_file= match cli.output {
+    let output_file = match cli.output {
         Some(o) => o,
-        None => (String::from(file_stem) + ".md")
+        None => (String::from(file_stem) + ".md"),
     };
 
     let mut addons = Vec::<Box<dyn Addon>>::new();
 
-
     if !cli.no_git {
-        addons.push(Box::new(GitInfo::new(Path::new(&cli.git), cli.git != String::from("."))))
+        addons.push(Box::new(GitInfo::new(
+            Path::new(&cli.git),
+            cli.git != String::from("."),
+        )))
     }
 
     let log_level = match (cli.quiet, cli.verbose) {
@@ -88,6 +86,9 @@ fn main() -> anyhow::Result<()> {
         TerminalMode::Stderr,
         ColorChoice::Auto,
     )?;
+
+    log::debug!("input_path: {}", input_path.display());
+    log::debug!("file_stem: {}", file_stem);
 
     log::debug!("Reading from: {}", input_path.display());
     log::debug!("Writing to: {}", output_file);
@@ -107,7 +108,7 @@ fn main() -> anyhow::Result<()> {
             ProcessOptions {
                 disable_front_matter: cli.disable_front_matter,
                 addons,
-                summary: cli.summary 
+                summary: cli.summary,
             },
         );
 
@@ -118,7 +119,6 @@ fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
-
 
 #[test]
 fn verify_cli() {
