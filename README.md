@@ -15,27 +15,23 @@ From Git:
 ## Usage
 
 ```
-Markdown Test Reporter 0.2.12
-Jens Reimann <jreimann@redhat.com>
 Markdown generator for cargo test JSON files
 
-USAGE:
-    markdown-test-report [OPTIONS] [INPUT]
+Usage: markdown-test-report [OPTIONS] [INPUT]
 
-ARGS:
-    <INPUT>    The filename of the JSON test data. Unnecessary or unparsable lines will be
-               ignored [default: test-output.json]
+Arguments:
+  [INPUT]  The filename of the JSON test data. Unnecessary or unparsable lines will be ignored [default: test-output.json]
 
-OPTIONS:
-    -d, --disable-front-matter    Disable report metadata
-    -g, --git <GIT>               git top-level location [default: .]
-    -h, --help                    Print help information
-    -n, --no-git                  Disable extracting git information
-    -o, --output <OUTPUT>         The name of the output file
-    -q, --quiet                   Be quiet
-    -s, --summary                 Show only the summary section
-    -v, --verbose                 Be more verbose. May be repeated multiple times
-    -V, --version                 Print version information
+Options:
+  -o, --output <OUTPUT>  The name of the output file
+  -d, --no-front-matter  Disable report metadata
+  -g, --git <GIT>        git top-level location [default: .]
+  -s, --summary          Show only the summary section
+  -q, --quiet            Be quiet
+  -v, --verbose...       Be more verbose. May be repeated multiple times
+  -n, --no-git           Disable extracting git information
+  -h, --help             Print help information
+  -V, --version          Print version information
 ```
 
 ## JSON output for `cargo test`
