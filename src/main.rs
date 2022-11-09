@@ -60,7 +60,7 @@ fn main() -> anyhow::Result<()> {
 
     let output_file = match cli.output {
         Some(o) => o,
-        None => (String::from(file_stem) + ".md"),
+        None => String::from(file_stem) + ".md",
     };
 
     let mut addons = Vec::<Box<dyn Addon>>::new();
