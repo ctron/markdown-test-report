@@ -20,7 +20,7 @@ use std::{
 #[command(name = "Markdown Test Reporter", version, about, author, long_about = None)]
 struct Cli {
     /// The filename of the JSON test data. Unnecessary or unparsable lines will be ignored
-    #[arg(value_parser, default_value_t = String::from("test-output.json"))]
+    #[arg(value_parser, default_value = "test-output.json")]
     input: String,
     /// The name of the output file
     #[arg(short, long, value_parser)]
@@ -28,9 +28,9 @@ struct Cli {
     /// Disable report metadata
     #[arg(short='d', long, action = clap::ArgAction::SetTrue)]
     no_front_matter: bool,
-    /// git top-level location
-    #[arg(short, long, value_parser, default_value_t = String::from("."))]
-    git: String,
+    /// git top-level location [default: .]
+    #[arg(short, long, value_parser)]
+    git: Option<String>,
     /// Show only the summary section
     #[arg(short, long, action)]
     summary: bool,
@@ -66,10 +66,11 @@ fn main() -> anyhow::Result<()> {
     let mut addons = Vec::<Box<dyn Addon>>::new();
 
     if !cli.no_git {
+        let required = cli.git.is_some();
         addons.push(Box::new(GitInfo::new(
-            Path::new(&cli.git),
-            cli.git != String::from("."),
-        )))
+            Path::new(&cli.git.as_deref().unwrap_or(".")),
+            required,
+        )));
     }
 
     let log_level = match (cli.quiet, cli.verbose) {
@@ -120,8 +121,31 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn verify_cli() {
-    use clap::CommandFactory;
-    Cli::command().debug_assert()
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn verify_cli() {
+        use clap::CommandFactory;
+        Cli::command().debug_assert()
+    }
+
+    #[test]
+    fn test_git_not_present() {
+        let cli: Cli = Parser::parse_from(vec!["markdown-test-report"]);
+        assert_eq!(cli.git.as_deref(), None);
+    }
+
+    #[test]
+    fn test_git_present_with_default() {
+        let cli: Cli = Parser::parse_from(vec!["markdown-test-report", "--git", "."]);
+        assert_eq!(cli.git.as_deref(), Some("."));
+    }
+
+    #[test]
+    fn test_git_present_with_other() {
+        let cli: Cli = Parser::parse_from(vec!["markdown-test-report", "--git", "foo"]);
+        assert_eq!(cli.git.as_deref(), Some("foo"));
+    }
 }

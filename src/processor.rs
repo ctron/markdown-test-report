@@ -223,7 +223,7 @@ where
                     writeln!(
                         self.write,
                         "| {} | ✅ | {} | ",
-                        self.make_name(&name, "✅"),
+                        self.make_name(name, "✅"),
                         readable(exec_time)
                     )?;
                 }
@@ -234,7 +234,7 @@ where
                     writeln!(
                         self.write,
                         "| {} | ❌ | {} | ",
-                        self.make_name(&name, "❌"),
+                        self.make_name(name, "❌"),
                         readable(exec_time)
                     )?;
                 }
@@ -296,7 +296,7 @@ where
     W: Write,
 {
     fn drop(&mut self) {
-        if let Some(summary) = self.summary.clone() {
+        if let Some(summary) = self.summary {
             self.write_header(&summary).expect("Render header");
         }
         if !self.options.summary {
