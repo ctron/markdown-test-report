@@ -8,7 +8,7 @@ on:
 jobs:
 
   init:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       version: ${{steps.version.outputs.version}}
       prerelease: ${{steps.state.outputs.prerelease}}
@@ -16,11 +16,11 @@ jobs:
       - name: Evaluate state
         id: state
         run: |
-          test -z "${{github.head_ref}}" && echo '::set-output name=do-publish::true'
+          test -z "${{github.head_ref}}" && (echo 'do-publish=true' >> $GITHUB_OUTPUT)
           if [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo ::set-output name=release::true
+              echo release=true >> $GITHUB_OUTPUT
           elif [[ "${{ github.event.ref }}" =~ ^refs/tags/v.*$ ]]; then
-              echo ::set-output name=prerelease::true
+              echo prerelease=true >> $GITHUB_OUTPUT
           fi
 
       - name: Set version
@@ -30,7 +30,7 @@ jobs:
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           [ "$VERSION" == "main" ] && VERSION=latest
           echo VERSION=$VERSION
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
   ci:
@@ -38,45 +38,32 @@ jobs:
 
   release:
     needs: [ init, ci ]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Install convco
         run: |
-          curl -sLO https://github.com/convco/convco/releases/download/v0.3.9/convco-ubuntu.zip
+          curl -sLO https://github.com/convco/convco/releases/download/v0.3.12/convco-ubuntu.zip
           unzip convco-ubuntu.zip
           chmod a+x convco
           sudo mv convco /usr/local/bin
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: binary
 
       - name: Display downloaded content
         run: ls -R
 
-      - name: Create changelog
-        env:
-          TAG: v${{ needs.init.outputs.version }}
+      - name: Generate changelog
+        if: needs.prepare.outputs.release
         run: |
-          convco changelog $(git tag --sort v:refname -l 'v*' | tail -n2 | head -n1)..$TAG >> CHANGELOG.md
-
-      - name: Create Release
-        id: create-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ needs.init.outputs.version }}
-          release_name: ${{ needs.init.outputs.version }}
-          draft: true
-          prerelease: ${{ needs.init.outputs.prerelease }}
-          body_path: CHANGELOG.md
+          convco changelog --max-minor=1 > /tmp/changelog.md
 
       - name: Upload Release Assets
         env:
@@ -85,10 +72,18 @@ jobs:
         run: |
           hub release edit -m "" -a markdown-test-report#markdown-test-report-linux-amd64 $TAG
 
-      - name: Remove draft status
+      - name: Stage release
+        run: |
+          mkdir -p binaries
+          cp -p markdown-test-report binaries/markdown-test-report-linux-amd64
+
+      - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: v${{ needs.init.outputs.version }}
         run: |
-          # finally, remove the draft status
-          hub release edit -m "" --draft=false $TAG
+          OPTS=""
+          if [[ "${{ needs.init.outputs.prerelease }}" == "true" ]]; then
+            OPTS="${OPTS} -p"
+          fi
+          gh release create $OPTS --title "${{ needs.init.outputs.version }}" -F /tmp/changelog.md $TAG $(find binaries -type f)
