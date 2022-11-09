@@ -65,13 +65,6 @@ jobs:
         run: |
           convco changelog --max-minor=1 > /tmp/changelog.md
 
-      - name: Upload Release Assets
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: v${{ needs.init.outputs.version }}
-        run: |
-          hub release edit -m "" -a markdown-test-report#markdown-test-report-linux-amd64 $TAG
-
       - name: Stage release
         run: |
           mkdir -p binaries
