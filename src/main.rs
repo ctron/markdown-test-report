@@ -17,31 +17,31 @@ use std::{
 };
 
 #[derive(Debug, Parser)]
-#[clap(name = "Markdown Test Reporter", version, about, author, long_about = None)]
+#[command(name = "Markdown Test Reporter", version, about, author, long_about = None)]
 struct Cli {
     /// The filename of the JSON test data. Unnecessary or unparsable lines will be ignored
-    #[clap(value_parser, default_value_t = String::from("test-output.json"))]
+    #[arg(value_parser, default_value_t = String::from("test-output.json"))]
     input: String,
     /// The name of the output file
-    #[clap(short, long, value_parser)]
+    #[arg(short, long, value_parser)]
     output: Option<String>,
     /// Disable report metadata
-    #[clap(short='d', long, action = clap::ArgAction::SetTrue)]
+    #[arg(short='d', long, action = clap::ArgAction::SetTrue)]
     no_front_matter: bool,
     /// git top-level location
-    #[clap(short, long, value_parser, default_value_t = String::from("."))]
+    #[arg(short, long, value_parser, default_value_t = String::from("."))]
     git: String,
     /// Show only the summary section
-    #[clap(short, long, action)]
+    #[arg(short, long, action)]
     summary: bool,
     /// Be quiet
-    #[clap(short, long, conflicts_with = "verbose")]
+    #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
     /// Be more verbose. May be repeated multiple times
-    #[clap(short, long, action = clap::ArgAction::Count)]
+    #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
     /// Disable extracting git information
-    #[clap(short, long, action = clap::ArgAction::SetTrue, conflicts_with = "git")]
+    #[arg(short, long, action = clap::ArgAction::SetTrue, conflicts_with = "git")]
     no_git: bool,
 }
 
