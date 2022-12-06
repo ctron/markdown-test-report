@@ -222,7 +222,7 @@ where
                 test::Event::Ok { name, exec_time } => {
                     writeln!(
                         self.write,
-                        "| {} | ✅ | {:?} | ",
+                        "| {} | ✅ | {} | ",
                         self.make_name(name, "✅"),
                         readable(exec_time, self.options.precise)
                     )?;
