@@ -43,6 +43,9 @@ struct Cli {
     /// Disable extracting git information
     #[arg(short, long, action = clap::ArgAction::SetTrue, conflicts_with = "git")]
     no_git: bool,
+    /// Allow Precise Time reporting
+    #[arg(short, long, action = clap::ArgAction::SetTrue)]
+    precise: bool,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -110,6 +113,7 @@ fn main() -> anyhow::Result<()> {
                 disable_front_matter: cli.no_front_matter,
                 addons,
                 summary: cli.summary,
+                precise: cli.precise,
             },
         );
 
