@@ -1,7 +1,6 @@
 use crate::event::{suite, test, Record};
 use askama_escape::{escape, Html};
 use chrono::Utc;
-use humantime::FormattedDuration;
 use std::{
     fmt::{Debug, Display, Formatter},
     io::Write,
@@ -17,6 +16,7 @@ pub struct ProcessOptions {
     pub disable_front_matter: bool,
     pub addons: Vec<Box<dyn Addon>>,
     pub summary: bool,
+    pub precise: bool,
 }
 
 pub struct Processor<W>
@@ -118,7 +118,7 @@ where
             summary.failed,
             summary.ignored,
             summary.filtered_out,
-            readable(&summary.exec_time)
+            readable(&summary.exec_time, self.options.precise)
         )?;
         writeln!(self.write)?;
 
@@ -222,9 +222,9 @@ where
                 test::Event::Ok { name, exec_time } => {
                     writeln!(
                         self.write,
-                        "| {} | ✅ | {} | ",
+                        "| {} | ✅ | {:?} | ",
                         self.make_name(name, "✅"),
-                        readable(exec_time)
+                        readable(exec_time, self.options.precise)
                     )?;
                 }
 
@@ -235,7 +235,7 @@ where
                         self.write,
                         "| {} | ❌ | {} | ",
                         self.make_name(name, "❌"),
-                        readable(exec_time)
+                        readable(exec_time, self.options.precise)
                     )?;
                 }
             }
@@ -256,7 +256,11 @@ where
                     writeln!(self.write)?;
                     writeln!(self.write, "## {}", self.make_heading(name, "✅"))?;
                     writeln!(self.write)?;
-                    writeln!(self.write, "**Duration**: {}", readable(exec_time))?;
+                    writeln!(
+                        self.write,
+                        "**Duration**: {}",
+                        readable(exec_time, self.options.precise)
+                    )?;
                 }
 
                 test::Event::Failed {
@@ -267,7 +271,11 @@ where
                     writeln!(self.write)?;
                     writeln!(self.write, "## {}", self.make_heading(name, "❌"))?;
                     writeln!(self.write)?;
-                    writeln!(self.write, "**Duration**: {}", readable(exec_time))?;
+                    writeln!(
+                        self.write,
+                        "**Duration**: {}",
+                        readable(exec_time, self.options.precise)
+                    )?;
                     if !stdout.is_empty() {
                         writeln!(self.write)?;
                         writeln!(self.write, "<details>")?;
@@ -329,9 +337,12 @@ fn make_anchor(link: &str) -> String {
 }
 
 /// Make a readable duration from the provided one
-fn readable(duration: &Duration) -> FormattedDuration {
+fn readable(duration: &Duration, precise: bool) -> String {
+    if precise {
+        return format!("{:?}", duration);
+    }
     let duration = duration.as_secs();
-    humantime::format_duration(Duration::from_secs(duration))
+    humantime::format_duration(Duration::from_secs(duration)).to_string()
 }
 
 #[cfg(test)]
