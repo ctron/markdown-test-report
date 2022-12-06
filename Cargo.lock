@@ -386,7 +386,7 @@ dependencies = [
 
 [[package]]
 name = "markdown-test-report"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "anyhow",
  "askama_escape",
