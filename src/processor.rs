@@ -118,7 +118,7 @@ where
             summary.failed,
             summary.ignored,
             summary.filtered_out,
-            readable(&summary.exec_time, self.options.precise)
+            self.format_duration(&summary.exec_time)
         )?;
         writeln!(self.write)?;
 
@@ -224,7 +224,7 @@ where
                         self.write,
                         "| {} | ✅ | {} | ",
                         self.make_name(name, "✅"),
-                        readable(exec_time, self.options.precise)
+                        self.format_duration(exec_time)
                     )?;
                 }
 
@@ -235,7 +235,7 @@ where
                         self.write,
                         "| {} | ❌ | {} | ",
                         self.make_name(name, "❌"),
-                        readable(exec_time, self.options.precise)
+                        self.format_duration(exec_time)
                     )?;
                 }
             }
@@ -259,7 +259,7 @@ where
                     writeln!(
                         self.write,
                         "**Duration**: {}",
-                        readable(exec_time, self.options.precise)
+                        self.format_duration(exec_time)
                     )?;
                 }
 
@@ -274,7 +274,7 @@ where
                     writeln!(
                         self.write,
                         "**Duration**: {}",
-                        readable(exec_time, self.options.precise)
+                        self.format_duration(exec_time)
                     )?;
                     if !stdout.is_empty() {
                         writeln!(self.write)?;
@@ -296,6 +296,15 @@ where
         }
 
         Ok(())
+    }
+
+    /// Make a readable duration from the provided one
+    fn format_duration(&self, duration: &Duration) -> String {
+        if self.options.precise {
+            return format!("{:?}", duration);
+        }
+        let duration = duration.as_secs();
+        humantime::format_duration(Duration::from_secs(duration)).to_string()
     }
 }
 
@@ -334,15 +343,6 @@ fn make_anchor(link: &str) -> String {
         }
     }
     s
-}
-
-/// Make a readable duration from the provided one
-fn readable(duration: &Duration, precise: bool) -> String {
-    if precise {
-        return format!("{:?}", duration);
-    }
-    let duration = duration.as_secs();
-    humantime::format_duration(Duration::from_secs(duration)).to_string()
 }
 
 #[cfg(test)]
