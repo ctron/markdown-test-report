@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use chrono::{DateTime, FixedOffset, Utc};
 use git2::{Commit, Repository};
 use std::{
@@ -23,7 +24,8 @@ impl GitInfo {
     }
 
     fn render_commit(&self, write: &mut dyn Write, commit: &Commit) -> anyhow::Result<()> {
-        let tz = FixedOffset::west(commit.time().offset_minutes() * 60);
+        let tz = FixedOffset::west_opt(commit.time().offset_minutes() * 60)
+            .ok_or_else(|| anyhow!("Unable to calculate commit date timestamp"))?;
         let time =
             DateTime::<Utc>::from(UNIX_EPOCH + Duration::from_secs(commit.time().seconds() as u64))
                 .with_timezone(&tz);
