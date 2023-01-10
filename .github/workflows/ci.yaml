@@ -22,9 +22,11 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+      - run: cargo install cargo-auditable --force
+
       - name: Build
         run: |
-          cargo build --release
+          cargo auditable build --release
 
       - uses: actions/upload-artifact@v3
         with:
