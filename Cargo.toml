@@ -16,7 +16,7 @@ anyhow = "1"
 askama_escape = "0.10"
 chrono = "0.4"
 clap = { version = "4", features = ["derive", "cargo"] }
-git2 = "0.15"
+git2 = "0.16"
 humantime = "2"
 log = "0.4"
 serde = { version = "1", features = ["derive"] }
