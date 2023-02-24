@@ -153,9 +153,8 @@ where
             }
 
             Record::Suite(suite::Event::Started { test_count }) => {
-                self.test_count = Some(test_count);
+                self.record_suite_started(test_count);
             }
-
             Record::Suite(suite::Event::Ok {
                 passed,
                 failed,
@@ -164,14 +163,7 @@ where
                 exec_time,
                 ..
             }) => {
-                self.summary = Some(Summary {
-                    outcome: Outcome::Ok,
-                    passed,
-                    failed,
-                    ignored,
-                    filtered_out,
-                    exec_time,
-                });
+                self.record_suite_ok(passed, failed, ignored, filtered_out, exec_time);
             }
             Record::Suite(suite::Event::Failed {
                 passed,
@@ -181,6 +173,54 @@ where
                 exec_time,
                 ..
             }) => {
+                self.record_suite_failed(passed, failed, ignored, filtered_out, exec_time);
+            }
+        }
+
+        Ok(())
+    }
+
+    fn record_suite_started(&mut self, test_count: u64) {
+        self.test_count = match self.test_count {
+            Some(count) => Some(count + test_count),
+            None => Some(test_count),
+        };
+    }
+
+    fn record_suite_ok(&mut self, passed: u64, failed: u64, ignored: u64, filtered_out: u64, exec_time: Duration) {
+        match &mut self.summary {
+            Some(summary) => {
+                summary.outcome = if summary.outcome == Outcome::Failed { Outcome::Failed } else { Outcome::Ok };
+                summary.passed += passed;
+                summary.failed += failed;
+                summary.ignored += ignored;
+                summary.filtered_out += filtered_out;
+                summary.exec_time += exec_time;
+            }
+            None => {
+                self.summary = Some(Summary {
+                    outcome: Outcome::Ok,
+                    passed,
+                    failed,
+                    ignored,
+                    filtered_out,
+                    exec_time,
+                });
+            }
+        }
+    }
+
+    fn record_suite_failed(&mut self, passed: u64, failed: u64, ignored: u64, filtered_out: u64, exec_time: Duration) {
+        match &mut self.summary {
+            Some(summary) => {
+                summary.outcome = Outcome::Failed;
+                summary.passed += passed;
+                summary.failed += failed;
+                summary.ignored += ignored;
+                summary.filtered_out += filtered_out;
+                summary.exec_time += exec_time;
+            }
+            None => {
                 self.summary = Some(Summary {
                     outcome: Outcome::Failed,
                     passed,
@@ -191,8 +231,6 @@ where
                 });
             }
         }
-
-        Ok(())
     }
 
     /// Create a name (for the index) linking to the actual test
