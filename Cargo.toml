@@ -1,6 +1,6 @@
 [package]
 name = "markdown-test-report"
-version = "0.3.6"
+version = "0.3.7"
 edition = "2021"
 license = "Apache-2.0"
 
@@ -12,8 +12,8 @@ keywords = ["markdown", "testing"]
 readme = "README.md"
 
 [dependencies]
-askama_escape = "0.10"
 anyhow = "1"
+askama_escape = "0.10"
 chrono = "0.4"
 clap = { version = "4", features = ["derive", "cargo"] }
 git2 = "0.15"

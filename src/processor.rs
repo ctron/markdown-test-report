@@ -195,15 +195,22 @@ where
         Ok(())
     }
 
-    fn make_name(&self, name: &str, outcome: &str) -> String {
+    /// Create a name (for the index) linking to the actual test
+    fn make_linked_name(&self, name: &str) -> String {
+        format!("[{}](#{})", name, make_anchor(name))
+    }
+
+    /// Create the heading statement of a test
+    fn make_heading(&self, name: &str, outcome: &str) -> String {
         format!(
-            "[{}](#{})",
-            name,
-            make_anchor(&self.make_heading(name, outcome))
+            r#"## {}<a id="{}"></a>"#,
+            self.make_heading_title(name, outcome),
+            make_anchor(name)
         )
     }
 
-    fn make_heading(&self, name: &str, outcome: &str) -> String {
+    /// Create the title of a heading
+    fn make_heading_title(&self, name: &str, outcome: &str) -> String {
         format!("{} {}", outcome, name)
     }
 
@@ -223,7 +230,7 @@ where
                     writeln!(
                         self.write,
                         "| {} | ✅ | {} | ",
-                        self.make_name(name, "✅"),
+                        self.make_linked_name(name),
                         self.format_duration(exec_time)
                     )?;
                 }
@@ -234,7 +241,7 @@ where
                     writeln!(
                         self.write,
                         "| {} | ❌ | {} | ",
-                        self.make_name(name, "❌"),
+                        self.make_linked_name(name),
                         self.format_duration(exec_time)
                     )?;
                 }
@@ -254,7 +261,7 @@ where
                 test::Event::Started { .. } => {}
                 test::Event::Ok { name, exec_time } => {
                     writeln!(self.write)?;
-                    writeln!(self.write, "## {}", self.make_heading(name, "✅"))?;
+                    writeln!(self.write, "{}", self.make_heading(name, "✅"))?;
                     writeln!(self.write)?;
                     writeln!(
                         self.write,
@@ -269,7 +276,7 @@ where
                     stdout,
                 } => {
                     writeln!(self.write)?;
-                    writeln!(self.write, "## {}", self.make_heading(name, "❌"))?;
+                    writeln!(self.write, "{}", self.make_heading(name, "❌"))?;
                     writeln!(self.write)?;
                     writeln!(
                         self.write,
