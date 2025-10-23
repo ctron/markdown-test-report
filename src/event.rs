@@ -81,6 +81,8 @@ pub mod test {
             name: String,
             #[serde(deserialize_with = "from_duration")]
             exec_time: Duration,
+            #[serde(default)]
+            stdout: String,
         },
         Failed {
             name: String,

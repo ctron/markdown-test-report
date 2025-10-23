@@ -17,6 +17,7 @@ pub struct ProcessOptions {
     pub addons: Vec<Box<dyn Addon>>,
     pub summary: bool,
     pub precise: bool,
+    pub always_render_stdout: bool,
 }
 
 pub struct Processor<W>
@@ -187,10 +188,21 @@ where
         };
     }
 
-    fn record_suite_ok(&mut self, passed: u64, failed: u64, ignored: u64, filtered_out: u64, exec_time: Duration) {
+    fn record_suite_ok(
+        &mut self,
+        passed: u64,
+        failed: u64,
+        ignored: u64,
+        filtered_out: u64,
+        exec_time: Duration,
+    ) {
         match &mut self.summary {
             Some(summary) => {
-                summary.outcome = if summary.outcome == Outcome::Failed { Outcome::Failed } else { Outcome::Ok };
+                summary.outcome = if summary.outcome == Outcome::Failed {
+                    Outcome::Failed
+                } else {
+                    Outcome::Ok
+                };
                 summary.passed += passed;
                 summary.failed += failed;
                 summary.ignored += ignored;
@@ -210,7 +222,14 @@ where
         }
     }
 
-    fn record_suite_failed(&mut self, passed: u64, failed: u64, ignored: u64, filtered_out: u64, exec_time: Duration) {
+    fn record_suite_failed(
+        &mut self,
+        passed: u64,
+        failed: u64,
+        ignored: u64,
+        filtered_out: u64,
+        exec_time: Duration,
+    ) {
         match &mut self.summary {
             Some(summary) => {
                 summary.outcome = Outcome::Failed;
@@ -264,7 +283,9 @@ where
         for test in &self.tests {
             match test {
                 test::Event::Started { .. } => {}
-                test::Event::Ok { name, exec_time } => {
+                test::Event::Ok {
+                    name, exec_time, ..
+                } => {
                     writeln!(
                         self.write,
                         "| {} | ✅ | {} | ",
@@ -297,7 +318,11 @@ where
         for test in &self.tests {
             match test {
                 test::Event::Started { .. } => {}
-                test::Event::Ok { name, exec_time } => {
+                test::Event::Ok {
+                    name,
+                    exec_time,
+                    stdout,
+                } => {
                     writeln!(self.write)?;
                     writeln!(self.write, "{}", self.make_heading(name, "✅"))?;
                     writeln!(self.write)?;
@@ -306,6 +331,21 @@ where
                         "**Duration**: {}",
                         self.format_duration(exec_time)
                     )?;
+                    if self.options.always_render_stdout && !stdout.is_empty() {
+                        writeln!(self.write)?;
+                        writeln!(self.write, "<details>")?;
+                        writeln!(self.write)?;
+
+                        writeln!(self.write, "<summary>Test output</summary>")?;
+                        writeln!(self.write)?;
+
+                        writeln!(self.write, "<pre>")?;
+                        writeln!(self.write, "{}", escape(stdout, Html))?;
+                        writeln!(self.write, "</pre>")?;
+
+                        writeln!(self.write)?;
+                        writeln!(self.write, "</details>")?;
+                    }
                 }
 
                 test::Event::Failed {
@@ -401,6 +441,7 @@ mod tests {
             make_anchor("✅ tests::registry::test_registry_create_and_delete"),
             "-testsregistrytest_registry_create_and_delete"
         );
+        println!("Output");
         assert_eq!(make_anchor("foo  bar"), "foo-bar");
     }
 }
