@@ -17,7 +17,7 @@ pub struct ProcessOptions {
     pub addons: Vec<Box<dyn Addon>>,
     pub summary: bool,
     pub precise: bool,
-    pub always_render_stdout: bool,
+    pub show_output: bool,
 }
 
 pub struct Processor<W>
@@ -331,7 +331,7 @@ where
                         "**Duration**: {}",
                         self.format_duration(exec_time)
                     )?;
-                    if self.options.always_render_stdout && !stdout.is_empty() {
+                    if self.options.show_output && !stdout.is_empty() {
                         writeln!(self.write)?;
                         writeln!(self.write, "<details>")?;
                         writeln!(self.write)?;
@@ -441,7 +441,6 @@ mod tests {
             make_anchor("✅ tests::registry::test_registry_create_and_delete"),
             "-testsregistrytest_registry_create_and_delete"
         );
-        println!("Output");
         assert_eq!(make_anchor("foo  bar"), "foo-bar");
     }
 }
