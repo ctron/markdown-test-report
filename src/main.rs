@@ -48,7 +48,7 @@ struct Cli {
     precise: bool,
     /// Report test output also for successful tests
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
-    always_render_stdout: bool,
+    show_output: bool,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -117,7 +117,7 @@ fn main() -> anyhow::Result<()> {
                 addons,
                 summary: cli.summary,
                 precise: cli.precise,
-                always_render_stdout: cli.always_render_stdout,
+                show_output: cli.show_output,
             },
         );
 
