@@ -46,6 +46,9 @@ struct Cli {
     /// Allow Precise Time reporting
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
     precise: bool,
+    /// Report test output also for successful tests
+    #[arg(short, long, action = clap::ArgAction::SetTrue)]
+    show_output: bool,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -114,6 +117,7 @@ fn main() -> anyhow::Result<()> {
                 addons,
                 summary: cli.summary,
                 precise: cli.precise,
+                show_output: cli.show_output,
             },
         );
 
