@@ -20,6 +20,15 @@ jobs:
         run: |
           cargo build --release
 
+      - name: Check
+        run: cargo check --workspace
+
+      - name: Clippy
+        run: cargo clippy --all-targets --tests --bins --all -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace -- --nocapture
+
       - uses: actions/upload-artifact@v4
         with:
           name: binary
