@@ -1,6 +1,6 @@
 use serde::{
-    de::{self, Error},
     Deserialize, Deserializer,
+    de::{self, Error},
 };
 use std::{fmt, time::Duration};
 

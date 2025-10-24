@@ -1,5 +1,5 @@
-use crate::event::{suite, test, Record};
-use askama_escape::{escape, Html};
+use crate::event::{Record, suite, test};
+use askama_escape::{Html, escape};
 use chrono::Utc;
 use std::{
     fmt::{Debug, Display, Formatter},
@@ -187,10 +187,21 @@ where
         };
     }
 
-    fn record_suite_ok(&mut self, passed: u64, failed: u64, ignored: u64, filtered_out: u64, exec_time: Duration) {
+    fn record_suite_ok(
+        &mut self,
+        passed: u64,
+        failed: u64,
+        ignored: u64,
+        filtered_out: u64,
+        exec_time: Duration,
+    ) {
         match &mut self.summary {
             Some(summary) => {
-                summary.outcome = if summary.outcome == Outcome::Failed { Outcome::Failed } else { Outcome::Ok };
+                summary.outcome = if summary.outcome == Outcome::Failed {
+                    Outcome::Failed
+                } else {
+                    Outcome::Ok
+                };
                 summary.passed += passed;
                 summary.failed += failed;
                 summary.ignored += ignored;
@@ -210,7 +221,14 @@ where
         }
     }
 
-    fn record_suite_failed(&mut self, passed: u64, failed: u64, ignored: u64, filtered_out: u64, exec_time: Duration) {
+    fn record_suite_failed(
+        &mut self,
+        passed: u64,
+        failed: u64,
+        ignored: u64,
+        filtered_out: u64,
+        exec_time: Duration,
+    ) {
         match &mut self.summary {
             Some(summary) => {
                 summary.outcome = Outcome::Failed;
