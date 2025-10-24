@@ -48,8 +48,10 @@ pub mod suite {
             passed: u64,
             failed: u64,
             #[serde(default)]
+            #[allow(unused)]
             allowed_fail: u64,
             ignored: u64,
+            #[allow(unused)]
             measured: u64,
             filtered_out: u64,
             #[serde(deserialize_with = "from_duration")]
@@ -59,6 +61,7 @@ pub mod suite {
             passed: u64,
             failed: u64,
             #[serde(default)]
+            #[allow(unused)]
             allowed_fail: u64,
             ignored: u64,
             filtered_out: u64,
@@ -75,6 +78,7 @@ pub mod test {
     #[serde(tag = "event", rename_all = "lowercase")]
     pub enum Event {
         Started {
+            #[allow(unused)]
             name: String,
         },
         Ok {
