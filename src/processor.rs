@@ -1,5 +1,5 @@
-use crate::event::{suite, test, Record};
-use askama_escape::{escape, Html};
+use crate::event::{Record, suite, test};
+use askama_escape::{Html, escape};
 use chrono::Utc;
 use std::{
     fmt::{Debug, Display, Formatter},

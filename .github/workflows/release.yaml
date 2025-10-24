@@ -42,18 +42,18 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Install convco
         run: |
-          curl -sLO https://github.com/convco/convco/releases/download/v0.4.0/convco-ubuntu.zip
+          curl -sLO https://github.com/convco/convco/releases/download/v0.6.2/convco-ubuntu.zip
           unzip convco-ubuntu.zip
           chmod a+x convco
           sudo mv convco /usr/local/bin
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: binary
 
