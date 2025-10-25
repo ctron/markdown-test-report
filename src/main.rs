@@ -47,7 +47,7 @@ struct Cli {
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
     precise: bool,
     /// Report test output also for successful tests
-    #[arg(short, long, action = clap::ArgAction::SetTrue)]
+    #[arg(short='f', long, action = clap::ArgAction::SetTrue)]
     show_output: bool,
 }
 
