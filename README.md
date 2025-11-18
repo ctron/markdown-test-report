@@ -30,6 +30,8 @@ Options:
   -q, --quiet            Be quiet
   -v, --verbose...       Be more verbose. May be repeated multiple times
   -n, --no-git           Disable extracting git information
+  -p, --precise          Allow Precise Time reporting
+  -f, --show-output      Report test output also for successful tests
   -h, --help             Print help information
   -V, --version          Print version information
 ```
