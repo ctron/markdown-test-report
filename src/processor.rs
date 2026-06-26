@@ -18,6 +18,7 @@ pub struct ProcessOptions {
     pub summary: bool,
     pub precise: bool,
     pub show_output: bool,
+    pub dont_escape: bool,
 }
 
 pub struct Processor<W>
@@ -336,12 +337,16 @@ where
                         writeln!(self.write, "<details>")?;
                         writeln!(self.write)?;
 
-                        writeln!(self.write, "<summary>Test output</summary>")?;
-                        writeln!(self.write)?;
+                        if self.options.dont_escape {
+                            writeln!(self.write, "{}", stdout)?;
+                        } else {
+                            writeln!(self.write, "<summary>Test output</summary>")?;
+                            writeln!(self.write)?;
 
-                        writeln!(self.write, "<pre>")?;
-                        writeln!(self.write, "{}", escape(stdout, Html))?;
-                        writeln!(self.write, "</pre>")?;
+                            writeln!(self.write, "<pre>")?;
+                            writeln!(self.write, "{}", escape(stdout, Html))?;
+                            writeln!(self.write, "</pre>")?;
+                        }
 
                         writeln!(self.write)?;
                         writeln!(self.write, "</details>")?;
@@ -366,12 +371,16 @@ where
                         writeln!(self.write, "<details>")?;
                         writeln!(self.write)?;
 
-                        writeln!(self.write, "<summary>Test output</summary>")?;
-                        writeln!(self.write)?;
+                        if self.options.dont_escape {
+                            writeln!(self.write, "{}", stdout)?;
+                        } else {
+                            writeln!(self.write, "<summary>Test output</summary>")?;
+                            writeln!(self.write)?;
 
-                        writeln!(self.write, "<pre>")?;
-                        writeln!(self.write, "{}", escape(stdout, Html))?;
-                        writeln!(self.write, "</pre>")?;
+                            writeln!(self.write, "<pre>")?;
+                            writeln!(self.write, "{}", escape(stdout, Html))?;
+                            writeln!(self.write, "</pre>")?;
+                        }
 
                         writeln!(self.write)?;
                         writeln!(self.write, "</details>")?;
