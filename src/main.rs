@@ -49,7 +49,7 @@ struct Cli {
     /// Report test output also for successful tests
     #[arg(short='f', long, action = clap::ArgAction::SetTrue)]
     show_output: bool,
-    /// Don't escape test output
+    /// Disable html escape when rendering test std output
     #[arg(short='e', long, action = clap::ArgAction::SetTrue)]
     disable_escape: bool,
 }
