@@ -51,7 +51,7 @@ struct Cli {
     show_output: bool,
     /// Don't escape test output
     #[arg(short='e', long, action = clap::ArgAction::SetTrue)]
-    dont_escape: bool,
+    disable_escape: bool,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -121,7 +121,7 @@ fn main() -> anyhow::Result<()> {
                 summary: cli.summary,
                 precise: cli.precise,
                 show_output: cli.show_output,
-                dont_escape: cli.dont_escape,
+                disable_escape: cli.disable_escape,
             },
         );
 
