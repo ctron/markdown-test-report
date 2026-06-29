@@ -18,7 +18,7 @@ pub struct ProcessOptions {
     pub summary: bool,
     pub precise: bool,
     pub show_output: bool,
-    pub dont_escape: bool,
+    pub disable_escape: bool,
 }
 
 pub struct Processor<W>
@@ -333,23 +333,7 @@ where
                         self.format_duration(exec_time)
                     )?;
                     if self.options.show_output && !stdout.is_empty() {
-                        writeln!(self.write)?;
-                        writeln!(self.write, "<details>")?;
-                        writeln!(self.write)?;
-
-                        if self.options.dont_escape {
-                            writeln!(self.write, "{}", stdout)?;
-                        } else {
-                            writeln!(self.write, "<summary>Test output</summary>")?;
-                            writeln!(self.write)?;
-
-                            writeln!(self.write, "<pre>")?;
-                            writeln!(self.write, "{}", escape(stdout, Html))?;
-                            writeln!(self.write, "</pre>")?;
-                        }
-
-                        writeln!(self.write)?;
-                        writeln!(self.write, "</details>")?;
+                        Self::render_stdout(&mut self.write, stdout, self.options.disable_escape)?;
                     }
                 }
 
@@ -367,26 +351,34 @@ where
                         self.format_duration(exec_time)
                     )?;
                     if !stdout.is_empty() {
-                        writeln!(self.write)?;
-                        writeln!(self.write, "<details>")?;
-                        writeln!(self.write)?;
-
-                        if self.options.dont_escape {
-                            writeln!(self.write, "{}", stdout)?;
-                        } else {
-                            writeln!(self.write, "<summary>Test output</summary>")?;
-                            writeln!(self.write)?;
-
-                            writeln!(self.write, "<pre>")?;
-                            writeln!(self.write, "{}", escape(stdout, Html))?;
-                            writeln!(self.write, "</pre>")?;
-                        }
-
-                        writeln!(self.write)?;
-                        writeln!(self.write, "</details>")?;
+                        Self::render_stdout(&mut self.write, stdout, self.options.disable_escape)?;
                     }
                 }
             }
+        }
+
+        Ok(())
+    }
+
+    fn render_stdout(write: &mut W, stdout: &str, disable_escape: bool) -> anyhow::Result<()> {
+        if disable_escape {
+            writeln!(write, "<div>")?;
+            writeln!(write, "{}", stdout)?;
+            writeln!(write, "</div>")?;
+        } else {
+            writeln!(write)?;
+            writeln!(write, "<details>")?;
+            writeln!(write)?;
+
+            writeln!(write, "<summary>Test output</summary>")?;
+            writeln!(write)?;
+
+            writeln!(write, "<pre>")?;
+            writeln!(write, "{}", escape(stdout, Html))?;
+            writeln!(write, "</pre>")?;
+
+            writeln!(write)?;
+            writeln!(write, "</details>")?;
         }
 
         Ok(())
